@@ -1,0 +1,40 @@
+---
+import '../styles/tokens.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'FuseLab Digital — A boutique digital consultancy',
+  description = 'FuseLab Digital is a boutique digital consultancy helping businesses harness technology to unlock new opportunities. Founded by Deon Heunis and Leo Redelignhuys.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0b0f" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..900,0..100;1,9..144,200..900,0..100&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:ital,wght@0,400..600;1,400..600&display=swap"
+    />
+    <title>{title}</title>
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

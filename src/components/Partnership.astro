@@ -1,0 +1,118 @@
+---
+const pillars = [
+  {
+    k: 'Solve',
+    title: 'Solve complex challenges',
+    body: 'Cut-through strategy and hands-on engineering for ambitious products. We work the problem until the path forward is obvious.',
+  },
+  {
+    k: 'Optimise',
+    title: 'Optimise platforms',
+    body: 'Refine what you already have — performance, scalability, developer experience — so your platform compounds instead of drags.',
+  },
+  {
+    k: 'Explore',
+    title: 'Explore new frontiers',
+    body: 'Take ideas from whiteboard to shippable product. We are comfortable in the ambiguity of early-stage and in the rigour of scaling.',
+  },
+];
+---
+
+<section class="section partnership" id="partnership">
+  <div class="wrap">
+    <header class="section-header">
+      <span class="mono">04 / What we partner on</span>
+      <span class="eyebrow">Three ways we engage</span>
+    </header>
+
+    <div class="pillars">
+      {
+        pillars.map((p, i) => (
+          <article class="pillar reveal">
+            <span class="pillar__index mono">0{i + 1}</span>
+            <span class="pillar__k display-italic">{p.k}.</span>
+            <h3 class="pillar__title">{p.title}</h3>
+            <p class="pillar__body">{p.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+
+  @media (max-width: 900px) {
+    .pillars {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .pillar {
+    padding: var(--s-6) var(--s-5);
+    border: 1px solid var(--hairline);
+    margin-left: -1px;
+    margin-top: -1px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    position: relative;
+    background: var(--ink);
+    transition: background 400ms var(--ease-out-expo);
+  }
+
+  .pillar:hover {
+    background: var(--ink-2);
+  }
+
+  .pillar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--fuse-cyan);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 500ms var(--ease-out-expo);
+  }
+
+  .pillar:hover::before {
+    transform: scaleX(1);
+  }
+
+  .pillar__index {
+    color: var(--smoke);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+  }
+
+  .pillar__k {
+    color: var(--fuse-cyan);
+    font-size: var(--step-4);
+    line-height: 1;
+    margin-block: var(--s-3);
+  }
+
+  .pillar__title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: var(--step-2);
+    letter-spacing: -0.015em;
+    margin: 0;
+    line-height: 1.05;
+  }
+
+  .pillar__body {
+    margin: 0;
+    color: var(--bone-dim);
+    font-size: var(--step-0);
+    line-height: 1.55;
+  }
+</style>

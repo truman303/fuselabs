@@ -1,0 +1,134 @@
+---
+const principles = [
+  {
+    n: '01',
+    title: 'We go the extra mile',
+    body: 'Good enough is never good enough. We push every project past the brief and into the territory that actually makes a difference.',
+  },
+  {
+    n: '02',
+    title: 'We are team players',
+    body: 'Consultancy done well is collaborative, not transactional. We embed with your team, share context openly, and leave you stronger than we found you.',
+  },
+  {
+    n: '03',
+    title: 'We are selective',
+    body: 'We choose to work with great people. Fit matters — for us, for you, and for the work. We say no so we can say yes well.',
+  },
+  {
+    n: '04',
+    title: 'We are emotionally invested',
+    body: 'Your success matters to us. We care about the outcomes, the people behind them, and the long arc of what we build together.',
+  },
+  {
+    n: '05',
+    title: 'We stay boutique on purpose',
+    body: 'Small enough to give every project the attention it deserves. Focused enough that the people you meet are the people doing the work.',
+  },
+];
+---
+
+<section class="section approach" id="approach">
+  <div class="wrap">
+    <header class="section-header">
+      <span class="mono">02 / Approach</span>
+      <span class="eyebrow">Five things we believe</span>
+    </header>
+
+    <ol class="principles">
+      {
+        principles.map((p) => (
+          <li class="principle reveal">
+            <span class="principle__n mono">{p.n}</span>
+            <div class="principle__text">
+              <h3 class="principle__title">{p.title}</h3>
+              <p class="principle__body">{p.body}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .principles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: principle;
+  }
+
+  .principle {
+    display: grid;
+    grid-template-columns: 6rem 1fr;
+    gap: var(--s-6);
+    padding-block: var(--s-6);
+    border-top: 1px solid var(--hairline);
+    position: relative;
+    transition: background 400ms var(--ease-out-expo);
+  }
+
+  .principle:last-child {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .principle::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 1px;
+    background: var(--fuse-cyan);
+    transition: width 500ms var(--ease-out-expo);
+  }
+
+  .principle:hover::before {
+    width: 6rem;
+  }
+
+  .principle__n {
+    color: var(--fuse-cyan);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    padding-top: 0.35rem;
+  }
+
+  .principle__text {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: var(--s-6);
+    align-items: baseline;
+  }
+
+  .principle__title {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: var(--step-3);
+    letter-spacing: -0.015em;
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .principle__body {
+    margin: 0;
+    font-size: var(--step-0);
+    color: var(--bone-dim);
+    max-width: 48ch;
+  }
+
+  @media (max-width: 820px) {
+    .principle {
+      grid-template-columns: 3.5rem 1fr;
+      gap: var(--s-4);
+    }
+    .principle__text {
+      grid-template-columns: 1fr;
+      gap: var(--s-3);
+    }
+    .principle:hover::before {
+      width: 3.5rem;
+    }
+  }
+</style>

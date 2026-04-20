@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Manifesto from '../components/Manifesto.astro';
+import Approach from '../components/Approach.astro';
+import Founders from '../components/Founders.astro';
+import Partnership from '../components/Partnership.astro';
+import Contact from '../components/Contact.astro';
+---
+
+<Base>
+  <Nav />
+  <main>
+    <Hero />
+    <Manifesto />
+    <Approach />
+    <Founders />
+    <Partnership />
+    <Contact />
+  </main>
+</Base>
+
+<script>
+  import { initReveals } from '../scripts/reveals';
+  initReveals();
+</script>

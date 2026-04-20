@@ -1,0 +1,414 @@
+---
+/**
+ * Hero with a "pixel fusion" SVG mark.
+ * The cell grid is generated at build time so the markup is deterministic,
+ * then the client script animates each pixel from a scattered start to its
+ * resting position — an homage to the logo's pixel-burst-out-of-frame motif.
+ */
+
+type Cell = { col: number; row: number; accent: boolean };
+
+const CELL = 24;
+const GAP = 2;
+const COLS = 20;
+const ROWS = 13;
+const SIZE = CELL - GAP;
+
+// Frame (rounded rect) bounds in grid coordinates
+const FRAME = { col: 5, row: 4, w: 13, h: 8 };
+
+// Deterministic pseudo-random for build-time stability
+function hash(a: number, b: number): number {
+  const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+  return n - Math.floor(n);
+}
+
+const cells: Cell[] = [];
+
+// Burst pixels escaping out of the upper-left of the frame
+const burst: [number, number, boolean][] = [
+  [3, 0, true],
+  [4, 0, false],
+  [5, 0, false],
+  [2, 1, false],
+  [3, 1, false],
+  [4, 1, true],
+  [5, 1, false],
+  [1, 2, true],
+  [2, 2, false],
+  [3, 2, false],
+  [4, 2, false],
+  [5, 2, false],
+  [6, 2, true],
+  [2, 3, false],
+  [3, 3, true],
+  [4, 3, false],
+  [5, 3, false],
+  [6, 3, false],
+  [7, 3, false],
+];
+for (const [c, r, a] of burst) cells.push({ col: c, row: r, accent: a });
+
+// Dense cluster inside the frame — upper-left-heavy, thinning to lower-right
+for (let r = FRAME.row; r < FRAME.row + FRAME.h; r++) {
+  for (let c = FRAME.col; c < FRAME.col + FRAME.w; c++) {
+    const dx = c - FRAME.col;
+    const dy = r - FRAME.row;
+    const density = 1 - (dx + dy * 1.4) / (FRAME.w + FRAME.h);
+    if (hash(c, r) < density * 0.95) {
+      const accent = hash(r, c * 3) < 0.22;
+      cells.push({ col: c, row: r, accent });
+    }
+  }
+}
+
+const width = COLS * CELL;
+const height = ROWS * CELL;
+const frameX = FRAME.col * CELL;
+const frameY = FRAME.row * CELL;
+const frameW = FRAME.w * CELL - GAP;
+const frameH = FRAME.h * CELL - GAP;
+const framePerimeter = 2 * (frameW + frameH);
+
+// Breathing room in the viewBox so scatter-in pixels remain visible
+// while they animate toward their resting positions.
+const PAD = 140;
+const vbX = -PAD;
+const vbY = -PAD;
+const vbW = width + PAD * 2;
+const vbH = height + PAD * 2;
+---
+
+<section class="hero" id="top">
+  <div class="wrap hero__wrap">
+    <div class="hero__textual">
+      <p class="eyebrow hero__eyebrow">FuseLab Digital · est. 2026</p>
+
+      <h1 class="hero__title display">
+        <span class="hero__line" data-line="1">
+          <span class="hero__chars" aria-label="Where ideas">Where ideas</span>
+        </span>
+        <span class="hero__line" data-line="2">
+          <span class="hero__chars hero__chars--italic display-italic" aria-label="fuse">fuse</span>
+          <span class="hero__chars" aria-label="with">&nbsp;with</span>
+        </span>
+        <span class="hero__line" data-line="3">
+          <span class="hero__chars" aria-label="engineering.">engineering.</span>
+        </span>
+      </h1>
+
+      <p class="hero__lede lede">
+        A boutique digital consultancy helping businesses harness technology to
+        unlock new opportunities.
+      </p>
+
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#contact">
+          <span>Start a conversation</span>
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14">
+            <path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="square"></path>
+          </svg>
+        </a>
+        <a class="btn btn--ghost" href="#manifesto">
+          Our approach
+        </a>
+      </div>
+    </div>
+
+    <div class="hero__mark" aria-hidden="true">
+      <svg
+        class="pixel-svg"
+        viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
+        width={vbW}
+        height={vbH}
+        role="presentation"
+      >
+        <defs>
+          <filter id="pixelGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <rect
+          class="pixel-frame"
+          x={frameX}
+          y={frameY}
+          width={frameW}
+          height={frameH}
+          rx="4"
+          ry="4"
+          fill="none"
+          stroke="var(--fuse-cyan)"
+          stroke-width="1.5"
+          stroke-dasharray={framePerimeter}
+          stroke-dashoffset={framePerimeter}
+        />
+
+        {
+          cells.map((cell, i) => (
+            <rect
+              class={`pixel${cell.accent ? ' pixel--accent' : ''}`}
+              data-i={i}
+              data-accent={cell.accent ? 'true' : 'false'}
+              x={cell.col * CELL}
+              y={cell.row * CELL}
+              width={SIZE}
+              height={SIZE}
+              rx="1.5"
+              ry="1.5"
+              fill={cell.accent ? 'var(--fuse-cyan)' : 'var(--bone)'}
+            />
+          ))
+        }
+      </svg>
+      <div class="hero__mark-caption mono">
+        <span>// pixel_fusion.svg</span>
+        <span>{cells.length} cells · {Math.round((cells.filter((c) => c.accent).length / cells.length) * 100)}% accent</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero__scroll mono" aria-hidden="true">
+    <span>Scroll</span>
+    <span class="hero__scroll-line"></span>
+  </div>
+</section>
+
+<script>
+  import { initPixelFusion } from '../scripts/pixelFusion';
+  initPixelFusion();
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    padding-block: clamp(6rem, 12vh, 9rem) var(--section-y);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, var(--hairline) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--hairline) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 40%, black 30%, transparent 80%);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .hero__wrap {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+    position: relative;
+  }
+
+  @media (max-width: 900px) {
+    .hero__wrap {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+  }
+
+  .hero__eyebrow {
+    margin: 0 0 var(--s-6) 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hero__eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--fuse-cyan);
+    box-shadow: 0 0 16px var(--fuse-cyan);
+  }
+
+  .hero__title {
+    font-size: var(--step-5);
+    margin: 0 0 var(--s-6) 0;
+    font-weight: 300;
+  }
+
+  .hero__line {
+    display: block;
+    overflow: hidden;
+  }
+
+  .hero__chars {
+    display: inline-block;
+    will-change: transform;
+  }
+
+  .hero__chars--italic {
+    color: var(--fuse-cyan);
+    padding-right: 0.12em;
+  }
+
+  .hero__lede {
+    margin: 0 0 var(--s-6) 0;
+    max-width: 34ch;
+    opacity: 0;
+    color: var(--bone-dim);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    opacity: 0;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.95em 1.5em;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    border: 1px solid transparent;
+    transition:
+      background 240ms var(--ease-out-expo),
+      color 240ms var(--ease-out-expo),
+      border-color 240ms var(--ease-out-expo),
+      transform 240ms var(--ease-out-expo);
+  }
+
+  .btn--primary {
+    background: var(--fuse-cyan);
+    color: var(--ink);
+    border-color: var(--fuse-cyan);
+  }
+
+  .btn--primary:hover {
+    background: transparent;
+    color: var(--fuse-cyan);
+    transform: translateY(-2px);
+  }
+
+  .btn--ghost {
+    background: transparent;
+    color: var(--bone);
+    border-color: var(--hairline);
+  }
+
+  .btn--ghost:hover {
+    border-color: var(--bone);
+    transform: translateY(-2px);
+  }
+
+  .hero__mark {
+    position: relative;
+    display: grid;
+    justify-items: end;
+    gap: var(--s-4);
+  }
+
+  .hero__mark svg {
+    overflow: hidden;
+  }
+
+  .pixel-svg {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    filter: drop-shadow(0 20px 60px rgba(0, 174, 239, 0.12));
+  }
+
+  .pixel {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .pixel--accent {
+    filter: url(#pixelGlow);
+  }
+
+  .hero__mark-caption {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 560px;
+    font-size: 0.7rem;
+    opacity: 0;
+    color: var(--smoke);
+  }
+
+  .hero__scroll {
+    position: absolute;
+    bottom: var(--s-6);
+    left: var(--gutter);
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-size: 0.7rem;
+    opacity: 0;
+    color: var(--smoke);
+  }
+
+  .hero__scroll-line {
+    display: inline-block;
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(to right, var(--smoke), transparent);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero__scroll-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 30%;
+    background: var(--fuse-cyan);
+    animation: scroll-pulse 2.4s var(--ease-in-out-expo) infinite;
+  }
+
+  @keyframes scroll-pulse {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(400%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__chars {
+      transform: none;
+    }
+    .hero__lede,
+    .hero__actions,
+    .hero__mark-caption,
+    .hero__scroll {
+      opacity: 1;
+    }
+    .pixel {
+      opacity: 1;
+    }
+    .pixel-frame {
+      stroke-dashoffset: 0 !important;
+    }
+    .hero__scroll-line::after {
+      animation: none;
+    }
+  }
+</style>

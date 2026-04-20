@@ -1,0 +1,70 @@
+---
+// 01 — Manifesto
+---
+
+<section class="section manifesto" id="manifesto">
+  <div class="wrap">
+    <header class="section-header">
+      <span class="mono">01 / Manifesto</span>
+      <span class="eyebrow">Why we built this</span>
+    </header>
+
+    <p class="manifesto__lead display reveal">
+      Great digital products are built with
+      <em class="display-italic manifesto__accent">purpose</em>, strategy,
+      experience, and genuinely
+      <em class="display-italic manifesto__accent">great people</em>.
+    </p>
+
+    <div class="manifesto__body">
+      <p class="reveal">
+        FuseLab Digital is a boutique digital consultancy helping businesses
+        harness technology to unlock new opportunities. We partner with
+        organisations to solve complex challenges, optimise platforms, and
+        create solutions that drive growth and efficiency.
+      </p>
+      <p class="reveal">
+        Whether you are refining an existing product or exploring new digital
+        frontiers, we bring the insight, experience, and hands-on approach to
+        make it happen.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .manifesto__lead {
+    font-size: var(--step-5);
+    font-weight: 300;
+    margin: 0 0 var(--s-8) 0;
+    max-width: 22ch;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+  }
+
+  .manifesto__accent {
+    color: var(--fuse-cyan);
+  }
+
+  .manifesto__body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-6);
+    max-width: 70ch;
+    margin-left: auto;
+    font-size: var(--step-1);
+    line-height: 1.5;
+    color: var(--bone-dim);
+  }
+
+  .manifesto__body p {
+    margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    .manifesto__body {
+      grid-template-columns: 1fr;
+      margin-left: 0;
+    }
+  }
+</style>
