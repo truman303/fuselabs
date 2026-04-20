@@ -12,13 +12,13 @@
 type Pixel = { col: number; row: number; accent: boolean };
 
 // Hand-placed pixels — a sparse, irregular scatter (deliberately NOT a
-// diamond or circle) that concentrates around the front frame's top-left
-// corner and trails off unevenly. Cyan accents are interleaved so the
-// escape toward the top-left still reads as motion / direction.
-// Grid coords: col 0..6, row 0..6 (the cluster occupies a 7x7 window,
-// but most cells are intentionally empty).
+// diamond or circle) that originates at the front frame's top-left
+// corner and fans out across the whole screen, thinning as it spreads.
+// Cyan accents are interleaved so the flow still reads as motion.
+// Grid coords span ~12 cols x 9 rows; most cells are intentionally
+// empty so the mark never feels like a solid grid of dots.
 const PIXELS: Pixel[] = [
-  // Row 0 — single, isolated outlier (the "escaped" pixel)
+  // Row 0 — single isolated outlier (the "escaped" pixel)
   { col: 2, row: 0, accent: true },
 
   // Row 1 — thin broken trail
@@ -26,29 +26,44 @@ const PIXELS: Pixel[] = [
   { col: 3, row: 1, accent: false },
   { col: 4, row: 1, accent: true },
 
-  // Row 2 — gappy mid band
+  // Row 2 — gappy upper band
   { col: 1, row: 2, accent: false },
   { col: 2, row: 2, accent: true },
   { col: 5, row: 2, accent: false },
+  { col: 8, row: 2, accent: false },
 
   // Row 3 — densest strip, hugging the front frame's top edge
   { col: 0, row: 3, accent: false },
   { col: 1, row: 3, accent: true },
   { col: 3, row: 3, accent: false },
   { col: 4, row: 3, accent: false },
+  { col: 7, row: 3, accent: true },
 
-  // Row 4 — offset trail, drifting right
+  // Row 4 — offset trail drifting right across the frame
   { col: 2, row: 4, accent: false },
   { col: 4, row: 4, accent: true },
-  { col: 5, row: 4, accent: false },
+  { col: 6, row: 4, accent: false },
+  { col: 9, row: 4, accent: false },
 
-  // Row 5 — thinning further
+  // Row 5 — mid-frame scatter
   { col: 1, row: 5, accent: false },
   { col: 3, row: 5, accent: false },
+  { col: 7, row: 5, accent: true },
+  { col: 10, row: 5, accent: false },
 
-  // Row 6 — two scattered outliers at the tail
+  // Row 6 — thinning as it fans out
   { col: 2, row: 6, accent: false },
-  { col: 4, row: 6, accent: true },
+  { col: 5, row: 6, accent: true },
+  { col: 8, row: 6, accent: false },
+  { col: 11, row: 6, accent: false },
+
+  // Row 7 — sparse lower band
+  { col: 4, row: 7, accent: false },
+  { col: 9, row: 7, accent: true },
+
+  // Row 8 — final echo near the bottom-right
+  { col: 7, row: 8, accent: false },
+  { col: 11, row: 8, accent: true },
 ];
 
 const CELL = 22;
