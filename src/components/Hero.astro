@@ -334,13 +334,6 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
     position: relative;
   }
 
-  @media (max-width: 900px) {
-    .hero__wrap {
-      grid-template-columns: 1fr;
-      gap: 3rem;
-    }
-  }
-
   .hero__eyebrow {
     margin: 0 0 var(--s-6) 0;
     display: inline-flex;
@@ -596,5 +589,69 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
     .pixel-frame-notch { opacity: 1; }
     .pixel-scene { opacity: 1; filter: none; }
     .hero__scroll-line::after { animation: none; }
+  }
+
+  /* ----------------------------------------------------------------
+     Mobile / narrow-tablet treatment — "Editorial masthead".
+
+     On small viewports the two-column hero stacks, which used to
+     drop the signature pixel-fusion mark below the CTA (buried past
+     the fold). Instead we promote the mark to an editorial
+     masthead element above the title: smaller, left-aligned flush
+     with the eyebrow, flatter tilt, no caption. This keeps the
+     signature moment front-and-centre while letting typography
+     lead on small screens and keeps the hero close to one screen
+     tall. Overrides are placed at the end of the stylesheet so they
+     win over the base rules via source order.
+  ---------------------------------------------------------------- */
+  @media (max-width: 1000px) {
+    .hero {
+      min-height: auto;
+      padding-block: clamp(5rem, 10vh, 7rem) var(--s-7);
+    }
+
+    .hero__wrap {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+
+    .hero__textual {
+      order: 2;
+    }
+
+    .hero__mark {
+      order: 1;
+      justify-items: start;
+      gap: var(--s-2);
+      margin-bottom: var(--s-2);
+      filter: drop-shadow(0 18px 44px rgba(0, 174, 239, 0.12));
+    }
+
+    .pixel-scene {
+      width: min(260px, 58vw);
+      max-width: none;
+    }
+
+    .pixel-scene-inner {
+      transform: rotateX(4deg) rotateY(-8deg) rotateZ(-0.5deg);
+    }
+
+    .hero__mark-caption {
+      display: none;
+    }
+
+    .hero__scroll {
+      display: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .pixel-scene {
+      width: min(220px, 62vw);
+    }
+
+    .hero__mark {
+      margin-bottom: 0;
+    }
   }
 </style>
