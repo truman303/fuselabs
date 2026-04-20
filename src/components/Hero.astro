@@ -1,82 +1,99 @@
 ---
 /**
- * Hero with a "pixel fusion" SVG mark.
- * The cell grid is generated at build time so the markup is deterministic,
- * then the client script animates each pixel from a scattered start to its
- * resting position — an homage to the logo's pixel-burst-out-of-frame motif.
+ * Hero with a "pixel fusion" SVG mark — a carbon copy of the FuseLab
+ * logo in its resting state: two stacked rounded-rect windows (for depth)
+ * with a sparse pixel cluster bursting out of the front window's upper-left.
+ *
+ * Each pixel position is hand-placed (not procedurally generated) so the
+ * composition matches the brand mark exactly. The client script animates
+ * pixels in from scattered positions and draws the frames last.
  */
 
-type Cell = { col: number; row: number; accent: boolean };
+type Pixel = { col: number; row: number; accent: boolean };
 
-const CELL = 24;
-const GAP = 2;
-const COLS = 20;
-const ROWS = 13;
+// Hand-placed pixels — a sparse, irregular scatter (deliberately NOT a
+// diamond or circle) that concentrates around the front frame's top-left
+// corner and trails off unevenly. Cyan accents are interleaved so the
+// escape toward the top-left still reads as motion / direction.
+// Grid coords: col 0..6, row 0..6 (the cluster occupies a 7x7 window,
+// but most cells are intentionally empty).
+const PIXELS: Pixel[] = [
+  // Row 0 — single, isolated outlier (the "escaped" pixel)
+  { col: 2, row: 0, accent: true },
+
+  // Row 1 — thin broken trail
+  { col: 0, row: 1, accent: false },
+  { col: 3, row: 1, accent: false },
+  { col: 4, row: 1, accent: true },
+
+  // Row 2 — gappy mid band
+  { col: 1, row: 2, accent: false },
+  { col: 2, row: 2, accent: true },
+  { col: 5, row: 2, accent: false },
+
+  // Row 3 — densest strip, hugging the front frame's top edge
+  { col: 0, row: 3, accent: false },
+  { col: 1, row: 3, accent: true },
+  { col: 3, row: 3, accent: false },
+  { col: 4, row: 3, accent: false },
+
+  // Row 4 — offset trail, drifting right
+  { col: 2, row: 4, accent: false },
+  { col: 4, row: 4, accent: true },
+  { col: 5, row: 4, accent: false },
+
+  // Row 5 — thinning further
+  { col: 1, row: 5, accent: false },
+  { col: 3, row: 5, accent: false },
+
+  // Row 6 — two scattered outliers at the tail
+  { col: 2, row: 6, accent: false },
+  { col: 4, row: 6, accent: true },
+];
+
+const CELL = 22;
+const GAP = 3;
 const SIZE = CELL - GAP;
 
-// Frame (rounded rect) bounds in grid coordinates
-const FRAME = { col: 5, row: 4, w: 13, h: 8 };
+// Frames in grid coords. The front frame starts at (col 3, row 3) so the
+// pixel cluster's upper-left corner breaks out of its top-left. The back
+// frame is offset +1 col / -1 row to create the depth / stack illusion.
+const FRONT = { col: 3, row: 3, w: 14, h: 10 };
+const BACK = { col: 4, row: 2, w: 14, h: 10 };
 
-// Deterministic pseudo-random for build-time stability
-function hash(a: number, b: number): number {
-  const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
-  return n - Math.floor(n);
-}
+const frontX = FRONT.col * CELL;
+const frontY = FRONT.row * CELL;
+const frontW = FRONT.w * CELL - GAP;
+const frontH = FRONT.h * CELL - GAP;
 
-const cells: Cell[] = [];
+const backX = BACK.col * CELL;
+const backY = BACK.row * CELL;
+const backW = BACK.w * CELL - GAP;
+const backH = BACK.h * CELL - GAP;
 
-// Burst pixels escaping out of the upper-left of the frame
-const burst: [number, number, boolean][] = [
-  [3, 0, true],
-  [4, 0, false],
-  [5, 0, false],
-  [2, 1, false],
-  [3, 1, false],
-  [4, 1, true],
-  [5, 1, false],
-  [1, 2, true],
-  [2, 2, false],
-  [3, 2, false],
-  [4, 2, false],
-  [5, 2, false],
-  [6, 2, true],
-  [2, 3, false],
-  [3, 3, true],
-  [4, 3, false],
-  [5, 3, false],
-  [6, 3, false],
-  [7, 3, false],
-];
-for (const [c, r, a] of burst) cells.push({ col: c, row: r, accent: a });
+const frontPerimeter = 2 * (frontW + frontH);
+const backPerimeter = 2 * (backW + backH);
 
-// Dense cluster inside the frame — upper-left-heavy, thinning to lower-right
-for (let r = FRAME.row; r < FRAME.row + FRAME.h; r++) {
-  for (let c = FRAME.col; c < FRAME.col + FRAME.w; c++) {
-    const dx = c - FRAME.col;
-    const dy = r - FRAME.row;
-    const density = 1 - (dx + dy * 1.4) / (FRAME.w + FRAME.h);
-    if (hash(c, r) < density * 0.95) {
-      const accent = hash(r, c * 3) < 0.22;
-      cells.push({ col: c, row: r, accent });
-    }
-  }
-}
+// Composition extents (covers both frames and the pixel burst)
+const contentW = (BACK.col + BACK.w) * CELL;
+const contentH = (FRONT.row + FRONT.h) * CELL;
 
-const width = COLS * CELL;
-const height = ROWS * CELL;
-const frameX = FRAME.col * CELL;
-const frameY = FRAME.row * CELL;
-const frameW = FRAME.w * CELL - GAP;
-const frameH = FRAME.h * CELL - GAP;
-const framePerimeter = 2 * (frameW + frameH);
-
-// Breathing room in the viewBox so scatter-in pixels remain visible
-// while they animate toward their resting positions.
-const PAD = 140;
+// Padding around the viewBox so scatter-in pixels remain visible while
+// they animate toward their resting positions.
+const PAD = 120;
 const vbX = -PAD;
 const vbY = -PAD;
-const vbW = width + PAD * 2;
-const vbH = height + PAD * 2;
+const vbW = contentW + PAD * 2;
+const vbH = contentH + PAD * 2;
+
+// Tab/handle detail coords (the small cyan mark on the back window, and
+// the peeled-corner mark on the front window — both appear in the logo).
+const backTabX1 = backX + backW * 0.45;
+const backTabX2 = backX + backW * 0.92;
+const backTabY = backY + 10;
+
+const frontNotchX = frontX + 4;
+const frontNotchY = frontY + frontH - 18;
 ---
 
 <section class="hero" id="top">
@@ -119,55 +136,139 @@ const vbH = height + PAD * 2;
       <svg
         class="pixel-svg"
         viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
-        width={vbW}
-        height={vbH}
         role="presentation"
       >
         <defs>
           <filter id="pixelGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feGaussianBlur stdDeviation="1.6" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
+          <linearGradient id="scanBeam" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--fuse-cyan)" stop-opacity="0" />
+            <stop offset="45%" stop-color="var(--fuse-cyan)" stop-opacity="0.55" />
+            <stop offset="55%" stop-color="#ffffff" stop-opacity="0.85" />
+            <stop offset="100%" stop-color="var(--fuse-cyan)" stop-opacity="0" />
+          </linearGradient>
+
+          <clipPath id="markExtent" clipPathUnits="userSpaceOnUse">
+            <rect x={vbX} y={vbY} width={vbW} height={vbH} />
+          </clipPath>
         </defs>
 
+        {/* Soft beam — lives behind the mark so it glows through */}
         <rect
-          class="pixel-frame"
-          x={frameX}
-          y={frameY}
-          width={frameW}
-          height={frameH}
-          rx="4"
-          ry="4"
-          fill="none"
-          stroke="var(--fuse-cyan)"
-          stroke-width="1.5"
-          stroke-dasharray={framePerimeter}
-          stroke-dashoffset={framePerimeter}
+          class="pixel-scanline"
+          x={vbX}
+          y={vbY}
+          width={vbW}
+          height="72"
+          fill="url(#scanBeam)"
         />
 
-        {
-          cells.map((cell, i) => (
-            <rect
-              class={`pixel${cell.accent ? ' pixel--accent' : ''}`}
-              data-i={i}
-              data-accent={cell.accent ? 'true' : 'false'}
-              x={cell.col * CELL}
-              y={cell.row * CELL}
-              width={SIZE}
-              height={SIZE}
-              rx="1.5"
-              ry="1.5"
-              fill={cell.accent ? 'var(--fuse-cyan)' : 'var(--bone)'}
-            />
-          ))
-        }
+        {/* Back window (sits behind, offset up-right) */}
+        <g class="pixel-frame-group pixel-frame-group--back">
+          <rect
+            class="pixel-frame pixel-frame--back"
+            x={backX}
+            y={backY}
+            width={backW}
+            height={backH}
+            rx="6"
+            ry="6"
+            fill="none"
+            stroke="var(--bone-dim)"
+            stroke-width="2"
+            stroke-linejoin="round"
+            stroke-dasharray={backPerimeter}
+            stroke-dashoffset={backPerimeter}
+          />
+          {/* Cyan handle / tab detail near the top of the back frame */}
+          <line
+            class="pixel-frame-tab pixel-frame-tab--back"
+            x1={backTabX1}
+            y1={backTabY}
+            x2={backTabX2}
+            y2={backTabY}
+            stroke="var(--fuse-cyan)"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </g>
+
+        {/* Front window (sits in front, slightly down-left of the back) */}
+        <g class="pixel-frame-group pixel-frame-group--front">
+          <rect
+            class="pixel-frame pixel-frame--front"
+            x={frontX}
+            y={frontY}
+            width={frontW}
+            height={frontH}
+            rx="6"
+            ry="6"
+            fill="none"
+            stroke="var(--bone)"
+            stroke-width="2.5"
+            stroke-linejoin="round"
+            stroke-dasharray={frontPerimeter}
+            stroke-dashoffset={frontPerimeter}
+          />
+          {/* Peeled-corner mark on the front window (bottom-left detail) */}
+          <path
+            class="pixel-frame-notch"
+            d={`M ${frontNotchX} ${frontNotchY} l 0 14`}
+            stroke="var(--bone)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            fill="none"
+          />
+        </g>
+
+        {/* Pixel cluster — sparse, dark + cyan, bursts out top-left of front */}
+        <g class="pixel-cluster">
+          {
+            PIXELS.map((p, i) => (
+              <rect
+                class={`pixel${p.accent ? ' pixel--accent' : ''}`}
+                data-i={i}
+                data-accent={p.accent ? 'true' : 'false'}
+                data-row={p.row}
+                x={p.col * CELL}
+                y={p.row * CELL}
+                width={SIZE}
+                height={SIZE}
+                rx="1.5"
+                ry="1.5"
+                fill={p.accent ? 'var(--fuse-cyan)' : 'var(--bone)'}
+              />
+            ))
+          }
+        </g>
+
+        {/* Leading edge of the scanline — rides on top so it reads as a crisp beam */}
+        <line
+          class="pixel-scanline-edge"
+          x1={vbX}
+          x2={vbX + vbW}
+          y1={vbY}
+          y2={vbY}
+          stroke="var(--fuse-cyan)"
+          stroke-width="1.2"
+          stroke-linecap="round"
+          stroke-opacity="0.9"
+        />
       </svg>
       <div class="hero__mark-caption mono">
         <span>// pixel_fusion.svg</span>
-        <span>{cells.length} cells · {Math.round((cells.filter((c) => c.accent).length / cells.length) * 100)}% accent</span>
+        <span>
+          {PIXELS.length} cells ·{' '}
+          {Math.round(
+            (PIXELS.filter((p) => p.accent).length / PIXELS.length) * 100,
+          )}% accent
+        </span>
       </div>
     </div>
   </div>
@@ -318,17 +419,36 @@ const vbH = height + PAD * 2;
     display: grid;
     justify-items: end;
     gap: var(--s-4);
+    filter: drop-shadow(0 24px 60px rgba(0, 174, 239, 0.14));
   }
 
   .hero__mark svg {
-    overflow: hidden;
+    overflow: visible;
   }
 
   .pixel-svg {
     width: 100%;
     max-width: 560px;
     height: auto;
-    filter: drop-shadow(0 20px 60px rgba(0, 174, 239, 0.12));
+    opacity: 0;
+    filter: blur(14px) brightness(0.55) saturate(0.6);
+    will-change: opacity, filter, transform;
+  }
+
+  .pixel-frame--back {
+    opacity: 0.5;
+  }
+
+  .pixel-frame-tab {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: left center;
+  }
+
+  .pixel-frame-notch {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
   }
 
   .pixel {
@@ -340,6 +460,19 @@ const vbH = height + PAD * 2;
 
   .pixel--accent {
     filter: url(#pixelGlow);
+  }
+
+  /* Scanline: hidden until the animation pulls it in */
+  .pixel-scanline {
+    opacity: 0;
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+  }
+
+  .pixel-scanline-edge {
+    opacity: 0;
+    filter: drop-shadow(0 0 6px var(--fuse-cyan));
+    will-change: transform, opacity;
   }
 
   .hero__mark-caption {
@@ -383,32 +516,23 @@ const vbH = height + PAD * 2;
   }
 
   @keyframes scroll-pulse {
-    0% {
-      transform: translateX(-100%);
-    }
-    100% {
-      transform: translateX(400%);
-    }
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero__chars {
-      transform: none;
-    }
+    .hero__chars { transform: none; }
     .hero__lede,
     .hero__actions,
     .hero__mark-caption,
-    .hero__scroll {
-      opacity: 1;
-    }
-    .pixel {
-      opacity: 1;
-    }
-    .pixel-frame {
-      stroke-dashoffset: 0 !important;
-    }
-    .hero__scroll-line::after {
-      animation: none;
-    }
+    .hero__scroll { opacity: 1; }
+    .pixel { opacity: 1; }
+    .pixel-frame { stroke-dashoffset: 0 !important; }
+    .pixel-frame-tab,
+    .pixel-frame-notch { opacity: 1; }
+    .pixel-scanline,
+    .pixel-scanline-edge { opacity: 0; }
+    .pixel-svg { opacity: 1; filter: none; }
+    .hero__scroll-line::after { animation: none; }
   }
 </style>
