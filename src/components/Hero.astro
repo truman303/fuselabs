@@ -86,6 +86,13 @@ const vbY = -PAD;
 const vbW = contentW + PAD * 2;
 const vbH = contentH + PAD * 2;
 
+// Pixel cluster offset — shift the cluster toward the front frame's
+// top-left corner so it reads as "bursting out" rather than floating
+// off on its own. +1 col, +1 row keeps a handful of outlier pixels
+// outside the frame while anchoring the bulk of the cluster to it.
+const PIXEL_SHIFT_X = CELL;
+const PIXEL_SHIFT_Y = CELL;
+
 // Tab/handle detail coords (the small cyan mark on the back window, and
 // the peeled-corner mark on the front window — both appear in the logo).
 const backTabX1 = backX + backW * 0.45;
@@ -94,6 +101,8 @@ const backTabY = backY + 10;
 
 const frontNotchX = frontX + 4;
 const frontNotchY = frontY + frontH - 18;
+
+const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
 ---
 
 <section class="hero" id="top">
@@ -133,134 +142,128 @@ const frontNotchY = frontY + frontH - 18;
     </div>
 
     <div class="hero__mark" aria-hidden="true">
-      <svg
-        class="pixel-svg"
-        viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
-        role="presentation"
-      >
-        <defs>
-          <filter id="pixelGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="1.6" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <linearGradient id="scanBeam" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--fuse-cyan)" stop-opacity="0" />
-            <stop offset="45%" stop-color="var(--fuse-cyan)" stop-opacity="0.55" />
-            <stop offset="55%" stop-color="#ffffff" stop-opacity="0.85" />
-            <stop offset="100%" stop-color="var(--fuse-cyan)" stop-opacity="0" />
-          </linearGradient>
-
-          <clipPath id="markExtent" clipPathUnits="userSpaceOnUse">
-            <rect x={vbX} y={vbY} width={vbW} height={vbH} />
-          </clipPath>
-        </defs>
-
-        {/* Soft beam — lives behind the mark so it glows through */}
-        <rect
-          class="pixel-scanline"
-          x={vbX}
-          y={vbY}
-          width={vbW}
-          height="72"
-          fill="url(#scanBeam)"
-        />
-
-        {/* Back window (sits behind, offset up-right) */}
-        <g class="pixel-frame-group pixel-frame-group--back">
-          <rect
-            class="pixel-frame pixel-frame--back"
-            x={backX}
-            y={backY}
-            width={backW}
-            height={backH}
-            rx="6"
-            ry="6"
-            fill="none"
-            stroke="var(--bone-dim)"
-            stroke-width="2"
-            stroke-linejoin="round"
-            stroke-dasharray={backPerimeter}
-            stroke-dashoffset={backPerimeter}
-          />
-          {/* Cyan handle / tab detail near the top of the back frame */}
-          <line
-            class="pixel-frame-tab pixel-frame-tab--back"
-            x1={backTabX1}
-            y1={backTabY}
-            x2={backTabX2}
-            y2={backTabY}
-            stroke="var(--fuse-cyan)"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-        </g>
-
-        {/* Front window (sits in front, slightly down-left of the back) */}
-        <g class="pixel-frame-group pixel-frame-group--front">
-          <rect
-            class="pixel-frame pixel-frame--front"
-            x={frontX}
-            y={frontY}
-            width={frontW}
-            height={frontH}
-            rx="6"
-            ry="6"
-            fill="none"
-            stroke="var(--bone)"
-            stroke-width="2.5"
-            stroke-linejoin="round"
-            stroke-dasharray={frontPerimeter}
-            stroke-dashoffset={frontPerimeter}
-          />
-          {/* Peeled-corner mark on the front window (bottom-left detail) */}
-          <path
-            class="pixel-frame-notch"
-            d={`M ${frontNotchX} ${frontNotchY} l 0 14`}
-            stroke="var(--bone)"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            fill="none"
-          />
-        </g>
-
-        {/* Pixel cluster — sparse, dark + cyan, bursts out top-left of front */}
-        <g class="pixel-cluster">
-          {
-            PIXELS.map((p, i) => (
+      {/*
+        The mark is composed of three real depth planes stacked in 3D:
+          1. Back frame  — furthest from the viewer
+          2. Front frame — mid plane, the "screen"
+          3. Pixel cluster — nearest, floating just above the front frame
+        A gentle rotateY/rotateX on the scene container gives the whole
+        composition the feel of a display tilted slightly off-axis.
+      */}
+      <div class="pixel-scene">
+        <div class="pixel-scene-inner">
+          {/* Plane 1 — back frame (and its cyan tab) */}
+          <svg
+            class="pixel-svg pixel-plane pixel-plane--back"
+            viewBox={viewBoxAttr}
+            role="presentation"
+            aria-hidden="true"
+          >
+            <g class="pixel-frame-group pixel-frame-group--back">
               <rect
-                class={`pixel${p.accent ? ' pixel--accent' : ''}`}
-                data-i={i}
-                data-accent={p.accent ? 'true' : 'false'}
-                data-row={p.row}
-                x={p.col * CELL}
-                y={p.row * CELL}
-                width={SIZE}
-                height={SIZE}
-                rx="1.5"
-                ry="1.5"
-                fill={p.accent ? 'var(--fuse-cyan)' : 'var(--bone)'}
+                class="pixel-frame pixel-frame--back"
+                x={backX}
+                y={backY}
+                width={backW}
+                height={backH}
+                rx="6"
+                ry="6"
+                fill="none"
+                stroke="var(--bone-dim)"
+                stroke-width="2"
+                stroke-linejoin="round"
+                stroke-dasharray={backPerimeter}
+                stroke-dashoffset={backPerimeter}
               />
-            ))
-          }
-        </g>
+              <line
+                class="pixel-frame-tab pixel-frame-tab--back"
+                x1={backTabX1}
+                y1={backTabY}
+                x2={backTabX2}
+                y2={backTabY}
+                stroke="var(--fuse-cyan)"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </g>
+          </svg>
 
-        {/* Leading edge of the scanline — rides on top so it reads as a crisp beam */}
-        <line
-          class="pixel-scanline-edge"
-          x1={vbX}
-          x2={vbX + vbW}
-          y1={vbY}
-          y2={vbY}
-          stroke="var(--fuse-cyan)"
-          stroke-width="1.2"
-          stroke-linecap="round"
-          stroke-opacity="0.9"
-        />
-      </svg>
+          {/* Plane 2 — front frame */}
+          <svg
+            class="pixel-svg pixel-plane pixel-plane--front"
+            viewBox={viewBoxAttr}
+            role="presentation"
+            aria-hidden="true"
+          >
+            <g class="pixel-frame-group pixel-frame-group--front">
+              <rect
+                class="pixel-frame pixel-frame--front"
+                x={frontX}
+                y={frontY}
+                width={frontW}
+                height={frontH}
+                rx="6"
+                ry="6"
+                fill="none"
+                stroke="var(--bone)"
+                stroke-width="2.5"
+                stroke-linejoin="round"
+                stroke-dasharray={frontPerimeter}
+                stroke-dashoffset={frontPerimeter}
+              />
+              <path
+                class="pixel-frame-notch"
+                d={`M ${frontNotchX} ${frontNotchY} l 0 14`}
+                stroke="var(--bone)"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                fill="none"
+              />
+            </g>
+          </svg>
+
+          {/* Plane 3 — pixel cluster, nearest to the viewer */}
+          <svg
+            class="pixel-svg pixel-plane pixel-plane--pixels"
+            viewBox={viewBoxAttr}
+            role="presentation"
+            aria-hidden="true"
+          >
+            <defs>
+              <filter id="pixelGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="1.6" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            <g
+              class="pixel-cluster"
+              transform={`translate(${PIXEL_SHIFT_X} ${PIXEL_SHIFT_Y})`}
+            >
+              {
+                PIXELS.map((p, i) => (
+                  <rect
+                    class={`pixel${p.accent ? ' pixel--accent' : ''}`}
+                    data-i={i}
+                    data-accent={p.accent ? 'true' : 'false'}
+                    data-row={p.row}
+                    x={p.col * CELL}
+                    y={p.row * CELL}
+                    width={SIZE}
+                    height={SIZE}
+                    rx="1.5"
+                    ry="1.5"
+                    fill={p.accent ? 'var(--fuse-cyan)' : 'var(--bone)'}
+                  />
+                ))
+              }
+            </g>
+          </svg>
+        </div>
+      </div>
       <div class="hero__mark-caption mono">
         <span>// pixel_fusion.svg</span>
         <span>
@@ -426,13 +429,72 @@ const frontNotchY = frontY + frontH - 18;
     overflow: visible;
   }
 
-  .pixel-svg {
+  /* -- 3D scene ------------------------------------------------------
+     Three real depth planes stacked with CSS 3D. The outer .pixel-scene
+     establishes the perspective; .pixel-scene-inner rotates the whole
+     stack so the "screen" faces slightly off-axis; each .pixel-plane
+     is parked at its own z-depth (back < front < pixels).
+  ------------------------------------------------------------------- */
+  .pixel-scene {
+    position: relative;
     width: 100%;
     max-width: 560px;
-    height: auto;
+    aspect-ratio: 636 / 526; /* matches the shared viewBox */
+    perspective: 1600px;
+    perspective-origin: 58% 42%;
     opacity: 0;
-    filter: blur(14px) brightness(0.55) saturate(0.6);
     will-change: opacity, filter, transform;
+    filter: blur(14px) brightness(0.55) saturate(0.6);
+  }
+
+  .pixel-scene-inner {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    /* Base tilt lives here so the scene has its slant even before JS
+       runs; GSAP composes mouse parallax on top of these values. */
+    transform: rotateX(7deg) rotateY(-12deg) rotateZ(-1deg);
+    transform-origin: 58% 48%;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pixel-scene-inner {
+      transform: rotateX(4deg) rotateY(-8deg);
+    }
+  }
+
+  .pixel-plane {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /* Depth: back frame recedes, front frame is the anchor, pixels float
+     out toward the viewer. Keeps the deltas subtle so the silhouette
+     still reads as the FuseLab mark. */
+  .pixel-plane--back {
+    transform: translateZ(-58px);
+  }
+
+  .pixel-plane--front {
+    transform: translateZ(0);
+  }
+
+  .pixel-plane--pixels {
+    transform: translateZ(44px);
+    /* A soft shadow cast "down" onto the front frame sells the lift. */
+    filter: drop-shadow(2px 6px 6px rgba(0, 0, 0, 0.55));
+  }
+
+  /* Legacy selector kept for animation code that still references it;
+     the scene-level filter/opacity is what actually drives the tune-in. */
+  .pixel-svg {
+    width: 100%;
+    height: 100%;
   }
 
   .pixel-frame--back {
@@ -460,19 +522,6 @@ const frontNotchY = frontY + frontH - 18;
 
   .pixel--accent {
     filter: url(#pixelGlow);
-  }
-
-  /* Scanline: hidden until the animation pulls it in */
-  .pixel-scanline {
-    opacity: 0;
-    mix-blend-mode: screen;
-    will-change: transform, opacity;
-  }
-
-  .pixel-scanline-edge {
-    opacity: 0;
-    filter: drop-shadow(0 0 6px var(--fuse-cyan));
-    will-change: transform, opacity;
   }
 
   .hero__mark-caption {
@@ -530,9 +579,7 @@ const frontNotchY = frontY + frontH - 18;
     .pixel-frame { stroke-dashoffset: 0 !important; }
     .pixel-frame-tab,
     .pixel-frame-notch { opacity: 1; }
-    .pixel-scanline,
-    .pixel-scanline-edge { opacity: 0; }
-    .pixel-svg { opacity: 1; filter: none; }
+    .pixel-scene { opacity: 1; filter: none; }
     .hero__scroll-line::after { animation: none; }
   }
 </style>
