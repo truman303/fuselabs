@@ -343,7 +343,15 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
 
   .hero__line {
     display: block;
+    /* overflow: hidden masks the yPercent:110 line-reveal animation on
+       .hero__chars, but the default content-box stops at the baseline,
+       which clips descenders (e.g. the "g" tails in "engineering").
+       Extend the mask downward with padding-bottom, then pull the next
+       line back up with an equal negative margin so the visual rhythm
+       between lines — and the gap down to .hero__lede — is unchanged. */
     overflow: hidden;
+    padding-bottom: 0.22em;
+    margin-bottom: -0.22em;
   }
 
   .hero__chars {

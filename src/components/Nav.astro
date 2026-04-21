@@ -5,29 +5,63 @@
 <nav class="nav" aria-label="Primary">
   <div class="wrap nav__wrap">
     <a href="#top" class="nav__brand" aria-label="FuseLab Digital">
-      <!-- <svg class="nav__mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-        <rect x="1" y="4" width="4" height="4" fill="var(--fuse-cyan)" />
-        <rect x="6" y="1" width="4" height="4" fill="var(--bone)" />
-        <rect x="6" y="6" width="4" height="4" fill="var(--bone)" />
-        <rect x="11" y="6" width="4" height="4" fill="var(--fuse-cyan)" />
-        <rect x="6" y="11" width="4" height="4" fill="var(--bone)" />
-        <rect x="11" y="11" width="4" height="4" fill="var(--bone)" />
-        <rect x="16" y="11" width="4" height="4" fill="var(--fuse-cyan)" />
-        <rect x="11" y="16" width="4" height="4" fill="var(--bone)" />
-        <rect x="16" y="16" width="4" height="4" fill="var(--bone)" />
-      </svg> -->
-
-
-
-      <img
+      {/*
+        Static, pocket-sized twin of the Hero's pixel-fusion mark:
+        two stacked rounded-rect "windows" (back = cyan, recedes;
+        front = bone, anchor) with a sparse pixel burst escaping the
+        front window's top-left corner. Intentionally tiny and
+        unanimated so it reads cleanly at nav scale.
+      */}
+      <svg
         class="nav__mark"
-        src="/logo-only.png"
-        alt=""
-        width="32"
-        height="32"
-        decoding="async"
-        loading="eager"
-      />
+        viewBox="0 0 32 32"
+        width="28"
+        height="28"
+        role="presentation"
+        aria-hidden="true"
+      >
+        <rect
+          class="nav__mark-frame nav__mark-frame--back"
+          x="11"
+          y="7.5"
+          width="17"
+          height="13"
+          rx="2"
+          ry="2"
+          fill="none"
+          stroke="var(--fuse-cyan)"
+          stroke-width="1"
+          stroke-linejoin="round"
+        />
+        <rect
+          class="nav__mark-frame nav__mark-frame--front"
+          x="7"
+          y="11"
+          width="17"
+          height="13"
+          rx="2"
+          ry="2"
+          fill="none"
+          stroke="var(--bone)"
+          stroke-width="1.4"
+          stroke-linejoin="round"
+        />
+        <g class="nav__mark-pixels">
+          {/* Outliers — the scatter that breaks out past the frames */}
+          <rect x="1.8" y="1.8" width="2.2" height="2.2" rx="0.4" fill="var(--fuse-cyan)" />
+          <rect x="5.4" y="3.8" width="2.2" height="2.2" rx="0.4" fill="var(--bone)" />
+          <rect x="2.8" y="6" width="2.2" height="2.2" rx="0.4" fill="var(--bone)" />
+          <rect x="7" y="6.8" width="2.2" height="2.2" rx="0.4" fill="var(--fuse-cyan)" />
+          <rect x="0.4" y="9" width="2.2" height="2.2" rx="0.4" fill="var(--bone)" />
+          {/* Near-frame / overlay pixels — hug and cross the front window's
+              top-left, giving the burst the same density as the hero mark. */}
+          <rect x="4.2" y="9.2" width="2.2" height="2.2" rx="0.4" fill="var(--bone)" />
+          <rect x="9" y="9.2" width="2.2" height="2.2" rx="0.4" fill="var(--fuse-cyan)" />
+          <rect x="14.6" y="9.6" width="2.2" height="2.2" rx="0.4" fill="var(--bone)" />
+          <rect x="5.8" y="12.8" width="2.2" height="2.2" rx="0.4" fill="var(--bone)" />
+          <rect x="10.6" y="12.6" width="2.2" height="2.2" rx="0.4" fill="var(--fuse-cyan)" />
+        </g>
+      </svg>
       <span class="nav__wordmark">
         FuseLab<span class="nav__wordmark-dim">&nbsp;Digital</span>
       </span>
@@ -101,18 +135,19 @@
   .nav__mark {
     width: 28px;
     height: 28px;
-    border-radius: 50%;
-    object-fit: cover;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
+    overflow: visible;
     filter: drop-shadow(0 0 0 transparent);
     transition:
       filter 300ms var(--ease-out-expo),
       transform 400ms var(--ease-out-expo);
   }
 
+  .nav__mark-frame--back {
+    opacity: 0.7;
+  }
+
   .nav__brand:hover .nav__mark {
-    filter: drop-shadow(0 0 10px rgba(0, 174, 239, 0.55));
+    filter: drop-shadow(0 0 8px rgba(0, 174, 239, 0.55));
     transform: translateY(-1px);
   }
 
