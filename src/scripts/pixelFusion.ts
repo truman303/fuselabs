@@ -13,9 +13,10 @@ import { gsap } from 'gsap';
  *   1. Mark fades in from blurred + desaturated state (the "tune" move).
  *   2. Pixels fall into place row-by-row from above with a slight
  *      rotation and overshoot — think bits locking into a register.
- *   3. Frames stroke on (back first, then front) so they feel drawn in.
- *   4. The cyan tab and the front-frame notch snap in with back.out
- *      overshoot as a calibration detail.
+ *   3. Frames stroke on (cyan back first, then bone front) so they feel
+ *      drawn in.
+ *   4. The front-frame notch snaps in with back.out overshoot as a
+ *      calibration detail.
  *   5. A quick focus pulse (scale + glow) confirms the lock.
  *   6. Idle: a handful of accent pixels breathe so the mark never
  *      feels fully static.
@@ -46,9 +47,6 @@ export function initPixelFusion(): void {
         document.querySelector<SVGRectElement>('.pixel-frame--back');
       const frontNotch =
         document.querySelector<SVGPathElement>('.pixel-frame-notch');
-      const backTab = document.querySelector<SVGLineElement>(
-        '.pixel-frame-tab--back',
-      );
       const pixels = gsap.utils.toArray<SVGRectElement>('.pixel');
       const accents = pixels.filter((p) => p.dataset.accent === 'true');
       const chars = gsap.utils.toArray<HTMLElement>('.hero__chars');
@@ -80,7 +78,7 @@ export function initPixelFusion(): void {
           scale: 1,
         });
         gsap.set([frontFrame, backFrame], { strokeDashoffset: 0 });
-        gsap.set([frontNotch, backTab], { autoAlpha: 1, scale: 1 });
+        gsap.set(frontNotch, { autoAlpha: 1, scale: 1 });
         gsap.set(chars, { yPercent: 0 });
         gsap.set([lede, actions, markCaption, scroll], { autoAlpha: 1 });
         return;
@@ -104,7 +102,7 @@ export function initPixelFusion(): void {
         });
       });
 
-      gsap.set([backTab, frontNotch], {
+      gsap.set(frontNotch, {
         autoAlpha: 0,
         scale: 0,
         transformOrigin: '50% 50%',
@@ -158,17 +156,8 @@ export function initPixelFusion(): void {
         '-=0.9',
       );
 
-      // 4. Calibration details — tab + notch snap in with overshoot.
+      // 4. Calibration detail — front-frame notch snaps in with overshoot.
       tl.to(
-        backTab,
-        {
-          autoAlpha: 1,
-          scale: 1,
-          duration: 0.55,
-          ease: 'back.out(2.6)',
-        },
-        '-=0.35',
-      ).to(
         frontNotch,
         {
           autoAlpha: 1,
@@ -176,7 +165,7 @@ export function initPixelFusion(): void {
           duration: 0.55,
           ease: 'back.out(2.6)',
         },
-        '-=0.4',
+        '-=0.35',
       );
 
       // 5. Focus pulse — quick breath on the whole mark, plus an

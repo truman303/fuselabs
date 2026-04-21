@@ -5,7 +5,7 @@
 <nav class="nav" aria-label="Primary">
   <div class="wrap nav__wrap">
     <a href="#top" class="nav__brand" aria-label="FuseLab Digital">
-      <svg class="nav__mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <!-- <svg class="nav__mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
         <rect x="1" y="4" width="4" height="4" fill="var(--fuse-cyan)" />
         <rect x="6" y="1" width="4" height="4" fill="var(--bone)" />
         <rect x="6" y="6" width="4" height="4" fill="var(--bone)" />
@@ -15,7 +15,19 @@
         <rect x="16" y="11" width="4" height="4" fill="var(--fuse-cyan)" />
         <rect x="11" y="16" width="4" height="4" fill="var(--bone)" />
         <rect x="16" y="16" width="4" height="4" fill="var(--bone)" />
-      </svg>
+      </svg> -->
+
+
+
+      <img
+        class="nav__mark"
+        src="/logo-only.png"
+        alt=""
+        width="32"
+        height="32"
+        decoding="async"
+        loading="eager"
+      />
       <span class="nav__wordmark">
         FuseLab<span class="nav__wordmark-dim">&nbsp;Digital</span>
       </span>
@@ -87,8 +99,10 @@
   }
 
   .nav__mark {
-    width: auto;
+    width: 28px;
     height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
     filter: drop-shadow(0 0 0 transparent);

@@ -108,12 +108,7 @@ const vbH = contentH + PAD * 2;
 const PIXEL_SHIFT_X = CELL;
 const PIXEL_SHIFT_Y = CELL;
 
-// Tab/handle detail coords (the small cyan mark on the back window, and
-// the peeled-corner mark on the front window — both appear in the logo).
-const backTabX1 = backX + backW * 0.45;
-const backTabX2 = backX + backW * 0.92;
-const backTabY = backY + 10;
-
+// Peeled-corner handle detail on the front window (appears in the logo).
 const frontNotchX = frontX + 4;
 const frontNotchY = frontY + frontH - 18;
 
@@ -167,7 +162,7 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
       */}
       <div class="pixel-scene">
         <div class="pixel-scene-inner">
-          {/* Plane 1 — back frame (and its cyan tab) */}
+          {/* Plane 1 — back frame (cyan, recedes behind the front frame) */}
           <svg
             class="pixel-svg pixel-plane pixel-plane--back"
             viewBox={viewBoxAttr}
@@ -184,21 +179,11 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
                 rx="6"
                 ry="6"
                 fill="none"
-                stroke="var(--bone-dim)"
+                stroke="var(--fuse-cyan)"
                 stroke-width="2"
                 stroke-linejoin="round"
                 stroke-dasharray={backPerimeter}
                 stroke-dashoffset={backPerimeter}
-              />
-              <line
-                class="pixel-frame-tab pixel-frame-tab--back"
-                x1={backTabX1}
-                y1={backTabY}
-                x2={backTabX2}
-                y2={backTabY}
-                stroke="var(--fuse-cyan)"
-                stroke-width="2"
-                stroke-linecap="round"
               />
             </g>
           </svg>
@@ -506,13 +491,7 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
   }
 
   .pixel-frame--back {
-    opacity: 0.5;
-  }
-
-  .pixel-frame-tab {
-    opacity: 0;
-    transform-box: fill-box;
-    transform-origin: left center;
+    opacity: 0.75;
   }
 
   .pixel-frame-notch {
@@ -585,7 +564,6 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
     .hero__scroll { opacity: 1; }
     .pixel { opacity: 1; }
     .pixel-frame { stroke-dashoffset: 0 !important; }
-    .pixel-frame-tab,
     .pixel-frame-notch { opacity: 1; }
     .pixel-scene { opacity: 1; filter: none; }
     .hero__scroll-line::after { animation: none; }
