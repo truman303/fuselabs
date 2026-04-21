@@ -564,7 +564,12 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
     100% { transform: translateX(400%); }
   }
 
-  @media (prefers-reduced-motion: reduce) {
+  /* Skip the "tune-in" choreography entirely for reduced-motion users
+     and on mobile viewports (where the hero stacks and the 3D scene
+     shrinks to an editorial masthead). The JS timeline in
+     pixelFusion.ts uses the matching matchMedia query so the JS and
+     CSS agree on when the final resting state should be rendered. */
+  @media (prefers-reduced-motion: reduce), (max-width: 1000px) {
     .hero__chars { transform: none; }
     .hero__lede,
     .hero__actions,
@@ -578,17 +583,17 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
   }
 
   /* ----------------------------------------------------------------
-     Mobile / narrow-tablet treatment — "Editorial masthead".
+     Mobile / narrow-tablet treatment.
 
-     On small viewports the two-column hero stacks, which used to
-     drop the signature pixel-fusion mark below the CTA (buried past
-     the fold). Instead we promote the mark to an editorial
-     masthead element above the title: smaller, left-aligned flush
-     with the eyebrow, flatter tilt, no caption. This keeps the
-     signature moment front-and-centre while letting typography
-     lead on small screens and keeps the hero close to one screen
-     tall. Overrides are placed at the end of the stylesheet so they
-     win over the base rules via source order.
+     The pixel-fusion mark is a desktop-scale moment — it depends on
+     the two-column layout, a pointer for parallax, and enough room
+     for the 3D scene to read. On small viewports we drop the mark
+     (and the floor scroll indicator) entirely and let typography
+     lead, keeping the hero close to one screen tall.
+
+     The matching matchMedia query in pixelFusion.ts gates the intro
+     timeline on the same breakpoint, so no animation work runs for
+     these hidden nodes.
   ---------------------------------------------------------------- */
   @media (max-width: 1000px) {
     .hero {
@@ -601,43 +606,9 @@ const viewBoxAttr = `${vbX} ${vbY} ${vbW} ${vbH}`;
       gap: var(--s-5);
     }
 
-    .hero__textual {
-      order: 2;
-    }
-
-    .hero__mark {
-      order: 1;
-      justify-items: start;
-      gap: var(--s-2);
-      margin-bottom: var(--s-2);
-      filter: drop-shadow(0 18px 44px rgba(0, 174, 239, 0.12));
-    }
-
-    .pixel-scene {
-      width: min(260px, 58vw);
-      max-width: none;
-    }
-
-    .pixel-scene-inner {
-      transform: rotateX(4deg) rotateY(-8deg) rotateZ(-0.5deg);
-    }
-
-    .hero__mark-caption {
-      display: none;
-    }
-
+    .hero__mark,
     .hero__scroll {
       display: none;
-    }
-  }
-
-  @media (max-width: 520px) {
-    .pixel-scene {
-      width: min(220px, 62vw);
-    }
-
-    .hero__mark {
-      margin-bottom: 0;
     }
   }
 </style>

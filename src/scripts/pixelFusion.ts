@@ -27,10 +27,17 @@ import { gsap } from 'gsap';
 export function initPixelFusion(): void {
   const mm = gsap.matchMedia();
 
+  // The "tune-in" sequence is a desktop-only moment: it needs the
+  // two-column hero, room for the 3D scene, and a pointer. On mobile
+  // the mark is removed entirely (see Hero.astro), so we skip this
+  // block altogether — the CSS fallback (same breakpoint) paints the
+  // text's final state pre-JS. Reduced-motion on desktop still runs
+  // the short branch below to sync GSAP state with CSS.
   mm.add(
     {
       reduceMotion: '(prefers-reduced-motion: reduce)',
-      fullMotion: '(prefers-reduced-motion: no-preference)',
+      fullMotion:
+        '(prefers-reduced-motion: no-preference) and (min-width: 1001px)',
     },
     (ctx) => {
       const { reduceMotion } = ctx.conditions as {
